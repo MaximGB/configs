@@ -1,0 +1,323 @@
+* StartUp and GUI settings
+
+** Showing buffer file name in the emacs window header
+
+   #+begin_src emacs-lisp :tangle config
+     (setq-default frame-title-format '("%f - " invocation-name "@" system-name))
+   #+end_src
+** Setting custom current line fase
+
+   #+begin_src emacs-lisp :tangle config
+     (custom-set-faces '(hl-line ((t (:background "#1c1823")))))
+   #+end_src
+
+
+* General behaviour
+
+** Window scrolling
+
+   Automatically scroll window horizontally to show point
+
+   #+begin_src emacs-lisp :tangle config
+     (setq-default auto-hscroll-mode t)
+   #+end_src
+
+   Setting up mouse wheel scrolling speed and behaviour
+
+   #+begin_src emacs-lisp :tangle config
+     (setq mouse-wheel-scroll-amount '(1))
+     (setq mouse-wheel-progressive-speed t)
+   #+end_src
+
+** Window splitting
+*** Deny horizontal splitting
+
+    #+begin_src emacs-lisp :tangle config
+      (setq split-width-threshold nil)
+    #+end_src
+** Window navigation and resizing
+
+   Using META+[Arrow] to navigate between splits
+
+   #+begin_src emacs-lisp :tangle config
+     (windmove-default-keybindings 'meta)
+   #+end_src
+
+   Setting up window resize shortcuts
+
+   #+begin_src emacs-lisp :tangle config
+     (global-set-key (kbd "M-S-<left>")  'shrink-window-horizontally)
+     (global-set-key (kbd "M-S-<right>") 'enlarge-window-horizontally)
+     (global-set-key (kbd "M-S-<down>")  'shrink-window)
+     (global-set-key (kbd "M-S-<up>")    'enlarge-window)
+   #+end_src
+** Line wrapping / truncation
+
+    Truncate lines instead of wrapping
+
+    #+begin_src emacs-lisp :tangle config
+      (setq-default truncate-lines t)
+    #+end_src
+
+** Line numbers for programming modes
+
+   #+begin_src emacs-lisp :tangle config
+     (add-hook 'prog-mode-hook #'display-line-numbers-mode)
+   #+end_src
+
+** Setting undo feature to fine undo
+
+   #+begin_src emacs-lisp :tangle config
+     (setq-default evil-want-fine-undo t)
+   #+end_src
+
+** (browse-url) default program set to google-chrome
+
+   #+begin_src emacs-lisp :tangle config
+
+     (setq-default browse-url-browser-function 'browse-url-chromium
+                   browse-url-chromium-program "google-chrome")
+   #+end_src
+
+
+* Key bindings
+
+** Evil lisp state
+
+   Evil lisp state has "w" to wrap a symbold with round brakets and "W" to unwrap
+   Clojure collections use other bracket types "[], {}", evil lisp state has no
+   functions (or I haven't found'em) to wrap with "[]" and "{}", but smartparens has.
+   Moreover "W" works for unwrapping symbols wrapped with "[]" and "{}".
+
+   Let's define the bindings to wrap with "[]" and "{}"
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'evil-lisp-state
+       (define-key evil-lisp-state-map "[" (evil-lisp-state-enter-command sp-wrap-square))
+       (define-key evil-lisp-state-map "{" (evil-lisp-state-enter-command sp-wrap-curly)))
+   #+end_src
+
+
+* Syntax & Indentation
+
+** JavaScript
+
+   Disabling js2-mode semicolon checking since it's ESLint/JSHint who should check it.
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'js2-mode
+       (setq-default js2-strict-missing-semi-warning nil))
+   #+end_src
+
+   To set js2-mode indentation to 2 spaces
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'js2-mode
+       (setq-default js2-basic-offset 2))
+   #+end_src
+
+** TypeScript
+
+   Set indentation to 2 spaces
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'typescript-mode
+       (setq-default typescript-indent-level 2))
+   #+end_src
+
+** JSON
+
+   Set indentation to 2 spaces
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'json-mode
+       (setq-default js-indent-level 2))
+   #+end_src
+** WebMode
+
+   Setting up web-mode indentation
+
+   #+begin_src emacs-lisp :tangle config
+      (with-eval-after-load 'web-mode
+        ;; web-mode-attr-indent-offset
+        ;; web-mode-attr-value-indent-offset
+        ;; web-mode-sql-indent-offset
+        (setq-default web-mode-markup-indent-offset 2)
+        (setq-default web-mode-css-indent-offset 2)
+        (setq-default web-mode-code-indent-offset 2))
+   #+end_src
+
+
+* Additional layers configuration
+
+** PlantUml
+   To be able to use PlantUml in Org-mode the following variable should be defined as given in:
+   https://github.com/syl20bnr/spacemacs/tree/master/layers/%2Blang/plantuml#org-babel-integration
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'org
+       (setq-default org-plantuml-jar-path "~/bin/plantuml.jar"))
+   #+end_src
+
+** Ditaa
+
+   To enable ditaa supprot we have to load org-babel ditaa languages support
+   and provide path to ditaa.jar
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'org
+
+       ; Asking org-babel to load ditaa language support
+       (org-babel-do-load-languages
+         'org-babel-load-languages
+         '((ditaa . t)))
+
+       ; Ditaa jar patch should be configured the default values searches for ditaa.jar in .emacs.d/elpa/.. directory
+       (with-eval-after-load 'ob-ditaa
+         (setq-default org-ditaa-jar-path "/usr/bin/ditaa")))
+   #+end_src
+
+
+* Modes configuration
+
+** Editor config minor mode
+
+   Enabling global editorconfig minor mode
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'editorconfig
+       (editorconfig-mode 1))
+   #+end_src
+
+** Web Mode (VUE support)
+
+   Let's consider *.vue files to be web-mode files.
+
+   #+begin_src emacs-lisp :tangle config
+      (with-eval-after-load 'web-mode
+        (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode)))
+   #+end_src
+
+   Turn of smartparens minor mode for web-mode
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'web-mode
+       (add-hook 'web-mode-hook #'(lambda () (smartparens-mode nil))))
+   #+end_src
+
+** TODO Org mode
+
+   Org mode setup and initialization
+
+   #+begin_src emacs-lisp :tangle config
+     (with-eval-after-load 'org
+
+       (setq-default org-return-follows-link t
+                     org-edit-src-content-indentation 2
+                     org-src-tab-acts-natively t
+                     org-src-fontify-natively t
+                     org-confirm-babel-evaluate nil)
+
+       ; Setting up list of languages which should be supported for Babel code blocks
+       (org-babel-do-load-languages
+        'org-babel-load-languages
+        '((emacs-lisp . t)
+          (shell . t)
+          (clojure . t)
+          (js . t)
+          (plantuml . t)))
+
+       ; Org Latex export setup
+       ; ----------------------
+       (require 'ox-latex)
+
+       ; Russian/Cyrillic languages suport for Latex/PDF export
+       (add-to-list 'org-latex-inputenc-alist '("utf8" . "utf8x"))
+       (add-to-list 'org-latex-packages-alist '("" "cmap" t))
+       (add-to-list 'org-latex-packages-alist '("english,russian" "babel" t))
+
+       ; Programming languages sytax highlighting support for Latex/PDF export
+
+       ; using Latex's 'minted' package which uses Python Pygments external tool
+       (setq-default org-latex-listings 'minted)
+       (add-to-list 'org-latex-packages-alist '("" "minted" t))
+       (setq-default org-latex-pdf-process '("pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f" "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f" "pdflatex -shell-escape -interaction nonstopmode -output-directory %o %f"))
+
+       ; Link style setup
+       (setq-default org-latex-hyperref-template "\\hypersetup{\n unicode=true,\n pdfauthor={%a},\n pdftitle={%t},\n pdfkeywords={%k},\n pdfsubject={%d},\n pdfcreator={%c}, \n pdflang={%L}, \n colorlinks, \n citecolor=blank, \n filecolor=black, \n linkcolor=black, \n urlcolor=black\n}\n")
+       ; -----------------------------
+       ; End of Org Latex export setup
+
+       ; Toc-org extension for org mode keeping contents up to date
+       (require 'toc-org)
+       (add-hook 'org-mode-hook 'toc-org-enable)
+
+       ; Using Cider as org mode babel backend
+       (require 'ob-clojure)
+       (setq-default org-babel-clojure-backend 'cider) ; This is not necessary, but anyway
+
+       ; Adding Sh code blocks support
+       (require 'ob-shell)
+
+       ; Adding hook to display inline images after code block execution
+       (add-hook 'org-babel-after-execute-hook (lambda() (condition-case nil
+                                                             (org-display-inline-images)
+                                                           (error nil))) 'append))
+   #+end_src
+
+
+* Bugfixes
+
+** Emacs hangs
+
+   Found it here, don't know if it will work or not
+   https://github.com/syl20bnr/spacemacs/issues/9409
+
+   #+begin_src emacs_lisp :tangle config
+     (setq history-length 100)
+     (put 'minibuffer-history 'history-length 50)
+     (put 'evil-ex-history 'history-length 50)
+     (put 'kill-ring 'history-length 25)
+   #+end_src
+
+* Custom functions
+
+** YASnippet helpers
+
+*** Typescript
+
+    Snippets defined:
+
+    - ReFC - React functional component
+    - rdxa - Redux Action / Interface / Creator
+
+    Creates a type name from a constant: MY_CONSTANT => MyConstant
+
+    #+begin_src emacs_lisp :tangle config
+      (defun maximgb/mk-type-name-from-constant (action-constant)
+        (mapconcat (lambda (w)
+                     (capitalize
+                       (downcase w)))
+                   (split-string action-constant "[_]")
+                   ""))
+    #+end_src
+
+    Creates constant a name from a type name: MyType => myType
+
+    #+begin_src emacs_lisp :tangle config
+      (defun maximgb/mk-constant-name-from-type (type-name)
+        (if (> (length type-name) 0)
+          (concat (downcase (substring type-name 0 1))
+                  (substring type-name 1))))
+    #+end_src
+
+    Removes parameter types from parameter list string: a:number, b:string => a, b
+
+    #+begin_src emacs_lisp :tangle config
+      (defun maximgb/rm-parameter-list-types (params)
+        (let* ((param-list (split-string params "[,]"))
+               (param-names (mapcar (lambda (p)
+                                      (first (split-string p "[:]")))
+                                    param-list)))
+          (string-join param-names ",")))
+    #+end_src
